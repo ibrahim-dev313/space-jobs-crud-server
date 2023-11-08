@@ -27,16 +27,22 @@ async function run() {
         await client.connect();
         // Send a ping to confirm a successful connection
         const jobCollection = client.db('job-website').collection('job')
+        const appliedjobsCollection = client.db('job-website').collection('applied-jobs')
+
+        //all job api
+        app.get("/jobs", async (req, res) => {
+            const result = await jobCollection.find().toArray();
+            res.send(result);
+        });
+
+
+        //single job apis
         app.post('/job', async (req, res) => {
             const job = req.body;
             const result = await jobCollection.insertOne(job)
             console.log(result);
             res.send(result)
         })
-        app.get("/jobs", async (req, res) => {
-            const result = await jobCollection.find().toArray();
-            res.send(result);
-        });
         app.get("/job/:id", async (req, res) => {
             const id = req.params.id;
             const query = {
@@ -82,9 +88,37 @@ async function run() {
             res.send(result);
 
         });
+        app.patch("/job/:id", async (req, res) => {
+            const jobId = req.params.id;
+            const { increment } = req.body;
+            console.log(increment);
+            const filter = { _id: new ObjectId(jobId) };
+            try {
+
+                const update = { $inc: { jobApplicants: 1 } };
+
+                const result = await jobCollection.updateOne(filter, update);
+
+                res.send(result)
+            } catch (error) {
+                console.error(error);
+            }
+        });
 
 
+        //appliedjobs
+        app.post('/applied-job', async (req, res) => {
+            const appliedJob = req.body;
+            console.log(appliedJob);
 
+            const result = await appliedjobsCollection.insertOne(appliedJob)
+            console.log(result);
+            res.send(result)
+        })
+        app.get("/applied-jobs", async (req, res) => {
+            const result = await appliedjobsCollection.find().toArray();
+            res.send(result);
+        });
 
 
 
