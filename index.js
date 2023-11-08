@@ -1,16 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 
-require('dotenv').config
+require('dotenv').config()
 const app = express()
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 4000
 
 app.use(express.json())
 app.use(cors())
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://mi13572018:2062Ak47@cluster0.50cvwuz.mongodb.net/?retryWrites=true&w=majority";
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const uri = `mongodb+srv://${process.env.USER}:${process.env.PASS}@cluster0.50cvwuz.mongodb.net/?retryWrites=true&w=majority`;
 
 
 const client = new MongoClient(uri, {
@@ -33,10 +33,56 @@ async function run() {
             console.log(result);
             res.send(result)
         })
-        app.get("/job", async (req, res) => {
-            const result = await usersCollection.find().toArray();
+        app.get("/jobs", async (req, res) => {
+            const result = await jobCollection.find().toArray();
             res.send(result);
         });
+        app.get("/job/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id),
+            };
+            const result = await jobCollection.findOne(query);
+            console.log(result);
+            res.send(result);
+        });
+        app.delete("/job/:id", async (req, res) => {
+            const id = req.params.id;
+            console.log("delete", id);
+            const query = {
+                _id: new ObjectId(id),
+            };
+            const result = await jobCollection.deleteOne(query);
+            console.log(result);
+            res.send(result);
+        });
+        app.put("/job/:id", async (req, res) => {
+            const id = req.params.id;
+            const data = req.body;
+            console.log("id", id, data);
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedJob = {
+                $set: {
+                    pictureURL: data.pictureURL,
+                    jobTitle: data.jobTitle,
+                    postedByEmail: data.postedByEmail,
+                    postedByName: data.postedByName,
+                    jobCategory: data.jobCategory,
+                    salaryRange: data.salaryRange,
+                    jobDescription: data.jobDescription,
+                    jobPostingDate: data.jobPostingDate,
+                    applicationDeadline: data.newApplicationDeadline,
+                    jobApplicants: data.jobApplicants
+
+                },
+            };
+
+            const result = await jobCollection.updateOne(filter, updatedJob, options);
+            res.send(result);
+
+        });
+
 
 
 
