@@ -88,6 +88,7 @@ async function run() {
             res.send(result);
 
         });
+        //increment job aplicant number
         app.patch("/job/:id", async (req, res) => {
             const jobId = req.params.id;
             const { increment } = req.body;
@@ -115,6 +116,7 @@ async function run() {
             console.log(result);
             res.send(result)
         })
+        // get jobs applied
         app.get("/applied-jobs", async (req, res) => {
             const result = await appliedjobsCollection.find().toArray();
             res.send(result);
